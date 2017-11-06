@@ -59,15 +59,28 @@ except Exception as e:
 print("Reddit credentials obtained.")
 
 PMLink = "https://www.reddit.com/message/compose/?to={bot}&subject={func}".format(bot=secret.username,func="{func}")
-toSantaLink = "[Send a message to your santa]({})".format(PMLink.format(func=quote("To Santa")))
-fromSantaLink = "[Send a message to your gift-recipient]({})".format(PMLink.format(func=quote("As Santa")))
+toSantaLink = "[Send a message to Santa-san]({})".format(PMLink.format(func=quote("To Santa-san")))
+fromSantaLink = "[Send a message to your kouhai]({})".format(PMLink.format(func=quote("As Santa-san")))
 printbox("To Santa Link: "+toSantaLink+"\n"+"From Santa Link: "+fromSantaLink,ignore=True)
 reportLink = "[report this message]({})".format(PMLink.format(func=quote("Report ")+"{}&message="+quote(
              "Please give the moderators a short reason for the report.")))
 
 preflair = "\n****\nReply to this message to have your reply forwarded. If you feel the need, "+reportLink
-botFlair="\n\nHappy holidays!\n*****\n{to} | {fs}\n\n[^^I'm ^^open ^^source!](https://github.com/WolfgangAxel/RSSB)".format(
-                                                                                            to=toSantaLink,fs=fromSantaLink)
+botFlair="\n\nHappy Xmas!\n*****\n{to} | {fs}{frtn}\n\n[^^I'm ^^open ^^source!](https://github.com/WolfgangAxel/RSSB)".format(
+                                                                                            to=toSantaLink,fs=fromSantaLink,frtn="{frtn}")
+
+if path.exists(path.join(picklePath,"fortunes.list")):
+    from random import choice
+    fortunes = path.join(picklePath,"fortunes.list")
+else:
+    fortunes = None
+
+def fortune():
+    if fortunes:
+        with open(fortunes,"r") as f:
+            return " | "+choice(f.read().splitlines())
+    else:
+        return ""
 
 def check():
     for message in reddit.inbox.unread():
@@ -75,23 +88,23 @@ def check():
             reddit.redditor(message.author.name).message("Delivery Failure","Your username is not in the list of "+
                           "users participating in this exchange. Please [contact the moderators]"+
                           "(https://www.reddit.com/message/compose/?to="+quote("/r/"+secret.mySubreddit,safe='')+
-                          ") if you feel there is a mistake."+botFlair)
+                          ") if you feel there is a mistake."+botFlair.format(frtn=fortune()))
             message.mark_read()
             continue
         if message.subject.lower() in ("re: delivery receipt","re: delivery failure"):
             message.mark_read()
             continue
-        if message.subject.lower() not in ("to santa", "re: a message from your secret santa",
-                                          "as santa", "re: a message from your gift recipient") and (
+        if message.subject.lower() not in ("to santa-san", "re: a message from santa-san",
+                                          "as santa-san", "re: a message from your kouhai") and (
                                           "report " not in message.subject.lower()):
             reddit.redditor(message.author.name).message("Delivery Failure","Your message had an improper title. "+
-                                                         "Please use one of the templated links to utilize this bot."+botFlair)
+                                                         "Please use one of the templated links to utilize this bot."+botFlair.format(frtn=fortune()))
             message.mark_read()
             continue
-        if message.subject.lower() in ("to santa", "re: a message from your secret santa"):
+        if message.subject.lower() in ("to santa-san", "re: a message from santa-san"):
             # To santa function
             sendMessage(message.author.name,message.body,'to santa')
-        elif message.subject.lower() in ("as santa", "re: a message from your gift recipient"):
+        elif message.subject.lower() in ("as santa-san", "re: a message from your kouhai"):
             # From santa function
             sendMessage(message.author.name,message.body,'as santa')
         else:
@@ -102,10 +115,10 @@ def check():
             else:
                 message.reply("Your report contained an invalid ID. Please do not alter the title of the report message and try again. "
                               "If the problem persists, [contact the moderators](https://www.reddit.com/message/compose/?to="+
-                              quote("/r/"+secret.mySubreddit,safe='')+")"+botFlair)
+                              quote("/r/"+secret.mySubreddit,safe='')+")"+botFlair.format(frtn=fortune()))
                 message.mark_read()
                 continue
-        reddit.redditor(message.author.name).message("Delivery Receipt","Your message was successfully delivered!"+botFlair)
+        reddit.redditor(message.author.name).message("Delivery Receipt","Your message was successfully delivered!"+botFlair.format(frtn=fortune()))
         message.mark_read()
 
 def saveMessage(name,to,msg,msgID):
@@ -114,15 +127,15 @@ def saveMessage(name,to,msg,msgID):
 
 def sendMessage(name,body,direction):
     if direction == "to santa":
-        title = "A Message from your Gift Recipient"
-        greeting = "Hello, /u/{user}!\n\nYou have received a message from your gift recipient:\n****\n".format(
+        title = "A Message from your Kouhai"
+        greeting = "Hello, /u/{user}!\n\nYou have received a message from your kouhai:\n****\n".format(
                                                                         user=santaList[direction][name.lower()])
     else:
-        title = "A Message from your Secret Santa"
-        greeting = "Hello, /u/{user}!\n\nYou have received a message from your Secret Santa:\n****\n".format(
+        title = "A Message from Santa-san"
+        greeting = "Hello, /u/{user}!\n\nYou have received a message from Santa-san!\n****\n".format(
                                                                         user=santaList[direction][name.lower()])
     messageID = strftime("%y.%m.%d.%H.%M.%S.")+str(time() % 1)[2:4]
-    wholeMessage = greeting+body+preflair.format(messageID)+botFlair
+    wholeMessage = greeting+body+preflair.format(messageID)+botFlair.format(frtn=fortune())
     saveMessage(name,santaList[direction][name.lower()],body,messageID)
     if len(wholeMessage) < 10000:
         reddit.redditor(santaList[direction][name.lower()]).message(title,wholeMessage)
