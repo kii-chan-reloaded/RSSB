@@ -30,6 +30,17 @@ This file will be read by the bot on first boot and be used henceforth. If you n
 ### Configuration
 Before the bot will work, you will need to edit `Modules/secret.py`. The file contains instructions on how to do that and what information is needed.
 
+Optionally, you may provide a `Objects/fortunes.list` file to have a random message displayed on each PM the bot sends. The file should be structured as one "fortune" per line. As an example, let's assume you want your bot to give a link to a random Christmas song on YouTube. You could create a `Objects/fortunes.list` like so:
+
+    [It's lovely weather for a sleigh ride together with you!](https://www.youtube.com/watch?v=OATi34PKNPw)
+    [Have a very merry TUBACHRISTMAS!](https://www.youtube.com/watch?v=8SzUijd2fq8)
+    [All I want for Christmas is frosted tips to come back in style](https://www.youtube.com/watch?v=wKj92352UAE)
+    ...
+
+If this file existed, then the end of the bot's message might look like this:
+
+[Send a message to your santa](https://www.reddit.com/message/compose/) | [Send a message to your gift-recipient](https://www.reddit.com/message/compose/) | [Have a very merry TUBACHRISTMAS!](https://www.youtube.com/watch?v=8SzUijd2fq8)
+
 ### Running the Bot
 The bot is designed with two modes in mind: running continuously on a server using a program like `screen`, or by executing it at predefined intervals using a program like `cron`. Both modes operate identically, and they are toggled through the `sleepTime` variable in `Modules/secret.py`.
 
